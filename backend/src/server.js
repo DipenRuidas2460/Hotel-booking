@@ -6,7 +6,7 @@ require("dotenv").config();
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 app.use(cors());
-const route = require("./routes/route")
+const route = require("./routes/route");
 
 app.use(function (req, res, next) {
   res.setHeader("Access-Control-Allow-Origin", "*");
@@ -25,52 +25,6 @@ app.use(function (req, res, next) {
 
 app.use("/", route);
 
-const server = app.listen(process.env.PORT, () => {
+app.listen(process.env.PORT, () => {
   console.log(`Server is connected at port ${process.env.PORT}`);
-});
-
-const io = require("socket.io")(server, {
-  pingTimeout: 60000,
-  cors: {
-    origin: "http://localhost:3000",
-  },
-});
-
-io.on("connection", (socket) => {
-  console.log("Socket.Io connected!");
-
-  socket.on("setup", (userData) => {
-    socket.join(userData.id);
-    socket.emit("connected");
-  });
-
-  socket.on("join chat", (room) => {
-    socket.join(room);
-    socket.emit("room joined", room);
-  });
-
-  socket.on("typing", (room) => {
-    socket.in(room).emit("typing");
-  });
-  socket.on("stop typing", (room) => socket.in(room).emit("stop typing"));
-
-  socket.on("new message", (newMessageRecieved) => {
-    if (
-      !newMessageRecieved.msg.chatSenderId &&
-      !newMessageRecieved.msg.userId
-    ) {
-      return console.log("Message Sender or chat sender not defined!");
-    }
-
-    if (newMessageRecieved.msg.userId === newMessageRecieved.senderId) return;
-
-    socket
-      .in(newMessageRecieved.chatId)
-      .emit("message recieved", newMessageRecieved);
-  });
-
-  socket.off("setup", (userData) => {
-    console.log("User Disconnected!");
-    socket.leave(userData.id);
-  });
 });

@@ -1,4 +1,6 @@
-const Customer = require("../models/customer");
+const User = require("../models/user");
+const UserDetails = require("../models/userDetails");
+const UserType = require("../models/userType");
 const asyncHandler = require("express-async-handler");
 const jwt = require("jsonwebtoken");
 require("dotenv").config();
@@ -9,7 +11,6 @@ const {
 } = require("../helper/side");
 const moment = require("moment");
 const { sendMail } = require("../helper/sendMail");
-const { Op } = require("sequelize");
 
 const secretKey = process.env.TOKEN_secret_key;
 const expiresIn = "24h";
@@ -20,11 +21,11 @@ const addUser = asyncHandler(async (req, res) => {
 
     const currentDate = moment().tz("Asia/Kolkata").format("YYYY-MM-DD, HH:mm");
 
-    const findEmail = await Customer.findOne({
+    const findEmail = await User.findOne({
       where: { email: reqBody.email },
     });
 
-    const findPhoneNumber = await Customer.findOne({
+    const findPhoneNumber = await User.findOne({
       where: { phoneNumber: reqBody.phoneNumber },
     });
 
@@ -43,14 +44,14 @@ const addUser = asyncHandler(async (req, res) => {
 
     reqBody.password = await encryptPassword(reqBody.password);
 
-    const userDetails = await Customer.create({
+    const userInfo = await User.create({
       ...reqBody,
       createdTime: currentDate,
     });
-    const response = await userDetails.save();
+    const resp = await userInfo.save();
 
     const token = jwt.sign(
-      { id: userDetails.id, role: userDetails.role },
+      { id: userInfo.id, userTypeId: userInfo.userTypeId },
       secretKey,
       { expiresIn }
     );
@@ -58,33 +59,25 @@ const addUser = asyncHandler(async (req, res) => {
     const mailData = {
       respMail: reqBody.email,
       subject: "Welcome",
-      text: `Hi, ${reqBody.fullName}. Welcome to Carrier Service App`,
+      text: `Hi, ${
+        reqBody.firstName + " " + reqBody.lastName
+      }. Welcome for Hotel Booking`,
     };
     await sendMail(mailData);
 
-    if (response) {
-      const { id, fullName, email, phoneNumber, role, photo } = response;
-
-      const registerUserData = {
-        id,
-        fullName,
-        email,
-        phoneNumber,
-        role,
-        photo,
-      }
+    if (resp) {
+      const { id, firstName, lastName, email, phoneNumber, userTypeId } = resp;
 
       res.header("Authorization", `Bearer ${token}`);
 
       return res.status(201).json({
-        status: 200,
-        registerUserData,
+        status: true,
         id,
-        fullName,
+        firstName,
+        lastName,
         email,
         phoneNumber,
-        role,
-        photo,
+        userTypeId,
         token,
         message: "User successfully created!",
       });
@@ -93,6 +86,81 @@ const addUser = asyncHandler(async (req, res) => {
         .status(400)
         .json({ status: false, message: "User is not created!" });
     }
+  } catch (error) {
+    console.log(error);
+    return res
+      .status(500)
+      .json({ status: false, message: "Something went wrong", err:error.message });
+  }
+});
+
+const createUserDetails = asyncHandler(async (req, res) => {
+  try {
+    const {
+      gender,
+      address,
+      nationalId,
+      nationality,
+      dob,
+      profession,
+      photoTypeId,
+      photoId,
+      photoFront,
+      photoBack,
+      photoGuest,
+      city,
+      passportNo,
+      balance,
+      bookingNo,
+      visaNo,
+      purpose,
+    } = req.body;
+
+    const obj = {
+      gender,
+      address,
+      nationalId,
+      nationality,
+      dob,
+      profession,
+      photoTypeId,
+      photoId,
+      photoFront,
+      photoBack,
+      photoGuest,
+      city,
+      passportNo,
+      balance,
+      bookingNo,
+      visaNo,
+      purpose,
+      loggedInUserId: req.person.id,
+    };
+    const userDetails = await UserDetails.create(obj);
+    const response = await userDetails.save();
+    return res.status(201).json({
+      status: true,
+      response: response,
+      message: "User Details successfully created!",
+    });
+  } catch (error) {
+    console.log(error.message);
+    return res
+      .status(500)
+      .json({ status: false, message: "Something went wrong" });
+  }
+});
+
+const createUserType = asyncHandler(async (req, res) => {
+  try {
+    const reqBody = req.body;
+    const userType = await UserType.create(reqBody);
+    const response = await userType.save();
+    return res.status(201).json({
+      status: true,
+      response: response,
+      message: "User type successfully created!",
+    });
   } catch (error) {
     console.log(error.message);
     return res
@@ -112,7 +180,7 @@ const login = asyncHandler(async (req, res) => {
       });
     }
 
-    const userDetails = await Customer.findOne({ where: { email: email } });
+    const userDetails = await User.findOne({ where: { email: email } });
 
     if (!userDetails) {
       return res
@@ -129,17 +197,17 @@ const login = asyncHandler(async (req, res) => {
     }
 
     const token = jwt.sign(
-      { id: userDetails.id, role: userDetails.role },
+      { id: userDetails.id, userTypeId: userDetails.userTypeId },
       secretKey,
       { expiresIn }
     );
     const data = {
       userId: userDetails.id,
-      fullName: userDetails.fullName,
+      firstName: userDetails.firstName,
+      lastName: userDetails.lastName,
       email: userDetails.email,
       phoneNumber: userDetails.phoneNumber,
-      role: userDetails.role,
-      photo: userDetails.photo,
+      userTypeId: userDetails.userTypeId,
       token: token,
     };
 
@@ -177,7 +245,7 @@ const forgetPass = asyncHandler(async (req, res) => {
   try {
     const { email } = req.body;
 
-    const userDetails = await Customer.findOne({
+    const userDetails = await User.findOne({
       where: { email: email },
     });
     if (!userDetails) {
@@ -185,7 +253,7 @@ const forgetPass = asyncHandler(async (req, res) => {
     }
 
     const token = generateString(20);
-    await Customer.update({ fpToken: token }, { where: { email: email } });
+    await User.update({ fpToken: token }, { where: { email: email } });
 
     const mailData = {
       respMail: email,
@@ -227,7 +295,7 @@ const fpUpdatePass = asyncHandler(async (req, res) => {
 
     const { token } = req.body;
 
-    const userInfo = await Customer.findOne({ where: { fpToken: token } });
+    const userInfo = await User.findOne({ where: { fpToken: token } });
     if (!userInfo)
       return res
         .status(400)
@@ -237,7 +305,7 @@ const fpUpdatePass = asyncHandler(async (req, res) => {
       reqBody.password = await encryptPassword(reqBody.password);
     }
 
-    const response = await Customer.update(
+    const response = await User.update(
       { password: reqBody.password },
       {
         where: { fpToken: token },
@@ -268,7 +336,28 @@ const updateUser = asyncHandler(async (req, res) => {
       reqBody.password = await encryptPassword(reqBody.password);
     }
 
-    const response = await Customer.update(reqBody, {
+    const response = await User.update(reqBody, {
+      where: { id: req.person.id },
+    });
+
+    return res.status(201).json({
+      status: response[0] === 0 ? 404 : 200,
+      data: response,
+      message: response[0] === 0 ? "Nothing updated" : "Successfully Updated!",
+    });
+  } catch (error) {
+    console.log(error.message);
+    return res
+      .status(500)
+      .json({ status: 500, message: "Something went wrong" });
+  }
+});
+
+const updateUserDetails = asyncHandler(async (req, res) => {
+  try {
+    let reqBody = req.body;
+
+    const response = await UserDetails.update(reqBody, {
       where: { id: req.person.id },
     });
 
@@ -287,9 +376,16 @@ const updateUser = asyncHandler(async (req, res) => {
 
 const getUserById = asyncHandler(async (req, res) => {
   try {
-    const response = await Customer.findOne({
+    const response = await User.findOne({
       where: { id: req.person.id },
-      attributes: ["id", "fullName", "email", "phoneNumber", "role", "photo"],
+      attributes: [
+        "id",
+        "firstName",
+        "lastName",
+        "email",
+        "phoneNumber",
+        "userTypeId",
+      ],
     });
 
     return res.status(200).json({
@@ -309,21 +405,7 @@ const getUserById = asyncHandler(async (req, res) => {
 
 const getAllUsers = asyncHandler(async (req, res) => {
   try {
-    const keyword = req.query.search
-      ? {
-          [Op.or]: [
-            { fullName: { [Op.like]: `%${req.query.search}%` } },
-            { email: { [Op.like]: `%${req.query.search}%` } },
-          ],
-        }
-      : {};
-
-    const response = await Customer.findAll({
-      where: {
-        ...keyword,
-        id: { [Op.not]: req.person.id },
-      },
-    });
+    const response = await User.findAll({});
 
     return res.status(200).json({
       status: "success",
@@ -342,7 +424,7 @@ const getAllUsers = asyncHandler(async (req, res) => {
 
 const updatePassword = asyncHandler(async (req, res) => {
   try {
-    const response = await Customer.findOne({ where: { id: req.person.id } });
+    const response = await User.findOne({ where: { id: req.person.id } });
 
     const { oldPassword, password } = req.body;
 
@@ -395,4 +477,7 @@ module.exports = {
   getUserById,
   updatePassword,
   getAllUsers,
+  createUserDetails,
+  createUserType,
+  updateUserDetails,
 };
