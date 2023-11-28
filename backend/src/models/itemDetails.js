@@ -1,6 +1,7 @@
 const { DataTypes } = require("sequelize");
 const sequelize = require("../config/dbConfig");
-const User = require("./user");
+const Category = require("./category");
+const ItemType = require("./itemType");
 
 const ItemDetails = sequelize.define(
   "ItemDetails",
@@ -89,6 +90,7 @@ const ItemDetails = sequelize.define(
   await ItemDetails.sync({ force: false });
 })();
 
-ItemDetails.belongsTo(User, { foreignKey: "loggedInUserId" });
+ItemDetails.belongsTo(ItemType, { foreignKey: "itemTypeId" });
+ItemDetails.belongsTo(Category, { foreignKey: "categoryId" });
 
 module.exports = ItemDetails;

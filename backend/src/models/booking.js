@@ -13,11 +13,11 @@ const Booking = sequelize.define(
       allowNull: false,
     },
     fromDate: {
-      type: DataTypes.DATEONLY,
+      type: DataTypes.DATE,
       allowNull: false,
     },
     toDate: {
-      type: DataTypes.DATEONLY,
+      type: DataTypes.DATE,
       allowNull: false,
     },
     quantity: {

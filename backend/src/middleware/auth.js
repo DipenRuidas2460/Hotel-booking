@@ -18,6 +18,8 @@ const validateTokenMiddleware = (req, res, next) => {
 
     req.person.id = decodedToken.id
 
+    req.person.userTypeId = decodedToken.userTypeId
+
     next();
   } catch (error) {
     return res.status(401).json({ status: "error", error: "unauthorized" });

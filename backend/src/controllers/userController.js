@@ -90,7 +90,11 @@ const addUser = asyncHandler(async (req, res) => {
     console.log(error);
     return res
       .status(500)
-      .json({ status: false, message: "Something went wrong", err:error.message });
+      .json({
+        status: false,
+        message: "Something went wrong",
+        err: error.message,
+      });
   }
 });
 
@@ -422,6 +426,27 @@ const getAllUsers = asyncHandler(async (req, res) => {
   }
 });
 
+const getUserDetails = asyncHandler(async (req, res) => {
+  try {
+    const response = await UserDetails.findOne({
+      where: { loggedInUserId: req.person.id },
+    });
+
+    return res.status(200).json({
+      status: "success",
+      data: response,
+      message: response.length ? "Successfully fetch data" : "No data found",
+    });
+  } catch (error) {
+    console.log(error.message);
+    return res.status(500).json({
+      status: 500,
+      message: "Something went wrong",
+      messageInfo: error,
+    });
+  }
+});
+
 const updatePassword = asyncHandler(async (req, res) => {
   try {
     const response = await User.findOne({ where: { id: req.person.id } });
@@ -480,4 +505,5 @@ module.exports = {
   createUserDetails,
   createUserType,
   updateUserDetails,
+  getUserDetails
 };

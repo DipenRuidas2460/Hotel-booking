@@ -1,18 +1,18 @@
 const asyncHandler = require("express-async-handler");
-const RoomList = require("../models/roomList");
+const Category = require("../models/category");
 
-const createRoomList = asyncHandler(async (req, res) => {
+const createCategory = asyncHandler(async (req, res) => {
   try {
     const reqBody = req.body;
 
     if (req.person.userTypeId === 1) {
-      const roomInfo = await RoomList.create(reqBody);
-      const resp = await roomInfo.save();
+      const categoryData = await Category.create(reqBody);
+      const resp = await categoryData.save();
 
       return res.status(201).json({
         status: true,
         response: resp,
-        message: "Room List created Successfully!",
+        message: "Category data created Successfully!",
       });
     } else {
       return res.status(400).json({
@@ -30,13 +30,13 @@ const createRoomList = asyncHandler(async (req, res) => {
   }
 });
 
-const fetchAllRoomList = asyncHandler(async (req, res) => {
+const fetchAllCategoryList = asyncHandler(async (req, res) => {
   try {
-    const roomList = await RoomList.findAll({});
+    const categoryList = await Category.findAll({});
     return res.status(200).json({
       status: true,
-      response: roomList,
-      message: "Room List fetched Successfully!",
+      response: categoryList,
+      message: "Category List fetched Successfully!",
     });
   } catch (error) {
     console.log(error.message);
@@ -48,21 +48,23 @@ const fetchAllRoomList = asyncHandler(async (req, res) => {
   }
 });
 
-const updateRoomList = asyncHandler(async (req, res) => {
+const updateCategoryList = asyncHandler(async (req, res) => {
   try {
     const reqBody = req.body;
-    const roomId = req.params.roomId;
+    const categoryId = req.params.categoryId;
 
     if (req.person.userTypeId === 1) {
-      const roomInfo = await RoomList.update(reqBody, {
-        where: { id: roomId },
+      const updatedCategory = await Category.update(reqBody, {
+        where: { id: categoryId },
       });
 
       return res.status(201).json({
-        status: roomInfo[0] === 0 ? 404 : 200,
-        data: roomInfo,
+        status: updatedCategory[0] === 0 ? 404 : 200,
+        data: updatedCategory,
         message:
-          roomInfo[0] === 0 ? "Nothing updated" : "Successfully Updated!",
+          updatedCategory[0] === 0
+            ? "Nothing updated"
+            : "Successfully Updated!",
       });
     } else {
       return res.status(400).json({
@@ -71,32 +73,32 @@ const updateRoomList = asyncHandler(async (req, res) => {
       });
     }
   } catch (error) {
-    console.log(error);
+    console.log(error.message);
     return res.status(500).json({
       status: false,
       message: "Something went wrong",
-      err: error,
+      err: error.message,
     });
   }
 });
 
-const deleteRoomList = async function (req, res) {
+const deleteCategoryList = async function (req, res) {
   try {
-    const roomId = req.params.roomId;
+    const categoryId = req.params.categoryId;
 
     if (req.person.userTypeId === 1) {
-      const deletedData = await RoomList.destroy({
-        where: { id: roomId },
+      const deletedData = await Category.destroy({
+        where: { id: categoryId },
       });
 
       if (!deletedData) {
         return res
           .status(404)
-          .send({ status: false, msg: "Room Data not found!" });
+          .send({ status: false, msg: "Category Data not found!" });
       }
       return res.status(200).json({
         status: true,
-        message: "Room Data deleted Successfully!",
+        message: "Category Data deleted Successfully!",
       });
     } else {
       return res.status(400).json({
@@ -111,8 +113,8 @@ const deleteRoomList = async function (req, res) {
 };
 
 module.exports = {
-  createRoomList,
-  fetchAllRoomList,
-  updateRoomList,
-  deleteRoomList,
+  createCategory,
+  fetchAllCategoryList,
+  updateCategoryList,
+  deleteCategoryList,
 };
