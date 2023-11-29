@@ -60,6 +60,24 @@ const createItemDetails = asyncHandler(async (req, res) => {
   }
 });
 
+const fetchAllItemDetailsList = asyncHandler(async (req, res) => {
+  try {
+    const response = await ItemDetails.findAll({});
+    return res.status(200).json({
+      status: "success",
+      data: response,
+      message: response.length ? "Successfully fetch data" : "No data found",
+    });
+  } catch (error) {
+    console.log(error.message);
+    return res.status(500).json({
+      status: 500,
+      message: "Something went wrong",
+      messageInfo: error,
+    });
+  }
+});
+
 const fetchAllItemTypeList = asyncHandler(async (req, res) => {
   try {
     const response = await ItemType.findAll({});
@@ -68,6 +86,36 @@ const fetchAllItemTypeList = asyncHandler(async (req, res) => {
       data: response,
       message: response.length ? "Successfully fetch data" : "No data found",
     });
+  } catch (error) {
+    console.log(error.message);
+    return res.status(500).json({
+      status: 500,
+      message: "Something went wrong",
+      messageInfo: error,
+    });
+  }
+});
+
+const updateItemDetails = asyncHandler(async (req, res) => {
+  try {
+    const reqBody = req.body;
+    if (req.person.userTypeId === 1) {
+      const response = await ItemDetails.update(reqBody, {
+        where: { id: req.params.itemDetailsId },
+      });
+
+      return res.status(201).json({
+        status: response[0] === 0 ? 404 : 200,
+        data: response,
+        message:
+          response[0] === 0 ? "Nothing updated" : "Successfully Updated!",
+      });
+    } else {
+      return res.status(400).json({
+        status: false,
+        message: "This operation is not authorized!",
+      });
+    }
   } catch (error) {
     console.log(error.message);
     return res.status(500).json({
@@ -108,6 +156,34 @@ const updateItemType = asyncHandler(async (req, res) => {
   }
 });
 
+const deleteItemDetails = async function (req, res) {
+  try {
+    if (req.person.userTypeId === 1) {
+      const deletedData = await ItemDetails.destroy({
+        where: { id: req.params.itemDetailsId },
+      });
+
+      if (!deletedData) {
+        return res
+          .status(404)
+          .send({ status: false, msg: "Item Details Data not found!" });
+      }
+      return res.status(200).json({
+        status: true,
+        message: "Item Details Data deleted Successfully!",
+      });
+    } else {
+      return res.status(400).json({
+        status: false,
+        msg: "Not Authorized to delete Data!",
+      });
+    }
+  } catch (err) {
+    console.error(err);
+    return res.status(err.status || 500).send(err.message);
+  }
+};
+
 const deleteItemType = async function (req, res) {
   try {
     if (req.person.userTypeId === 1) {
@@ -142,4 +218,7 @@ module.exports = {
   fetchAllItemTypeList,
   updateItemType,
   deleteItemType,
+  fetchAllItemDetailsList,
+  updateItemDetails,
+  deleteItemDetails,
 };

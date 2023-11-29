@@ -1,18 +1,18 @@
 const asyncHandler = require("express-async-handler");
-const Payment = require("../models/payment");
+const Product = require("../models/product");
 
-const createPayment = asyncHandler(async (req, res) => {
+const createProduct = asyncHandler(async (req, res) => {
   try {
     const reqBody = req.body;
 
     if (req.person.userTypeId === 1 && req.person.userTypeId === 2) {
-      const paymentData = await Payment.create(reqBody);
-      const resp = await paymentData.save();
+      const productData = await Product.create(reqBody);
+      const resp = await productData.save();
 
       return res.status(201).json({
         status: true,
         response: resp,
-        message: "Payment data created Successfully!",
+        message: "Product data created Successfully!",
       });
     } else {
       return res.status(400).json({
@@ -30,21 +30,14 @@ const createPayment = asyncHandler(async (req, res) => {
   }
 });
 
-const fetchAllPayment = asyncHandler(async (req, res) => {
+const fetchAllProduct = asyncHandler(async (req, res) => {
   try {
-    if (req.person.userTypeId === 1 && req.person.userTypeId === 2) {
-      const response = await Payment.findAll({});
-      return res.status(200).json({
-        status: "success",
-        data: response,
-        message: response.length ? "Successfully fetch data" : "No data found",
-      });
-    } else {
-      return res.status(400).json({
-        status: false,
-        message: "This operation is not authorized!",
-      });
-    }
+    const response = await Product.findAll({});
+    return res.status(200).json({
+      status: "success",
+      data: response,
+      message: response.length ? "Successfully fetch data" : "No data found",
+    });
   } catch (error) {
     console.log(error.message);
     return res.status(500).json({
@@ -55,17 +48,15 @@ const fetchAllPayment = asyncHandler(async (req, res) => {
   }
 });
 
-const fetchPaymentById = asyncHandler(async (req, res) => {
+const fetchProductById = asyncHandler(async (req, res) => {
   try {
-    const response = await Payment.findOne({
-      where: { id: req.params.paymentId },
+    const response = await Product.findOne({
+      where: { id: req.params.productId },
     });
     return res.status(200).json({
       status: "success",
       data: response,
-      message: response.length
-        ? "Successfully fetch data"
-        : "Data not present!",
+      message: response.length ? "Successfully fetch data" : "No data found",
     });
   } catch (error) {
     console.log(error.message);
@@ -77,12 +68,12 @@ const fetchPaymentById = asyncHandler(async (req, res) => {
   }
 });
 
-const updatePayment = asyncHandler(async (req, res) => {
+const updateProduct = asyncHandler(async (req, res) => {
   try {
     const reqBody = req.body;
     if (req.person.userTypeId === 1 && req.person.userTypeId === 2) {
-      const response = await Payment.update(reqBody, {
-        where: { id: req.params.paymentId },
+      const response = await Product.update(reqBody, {
+        where: { id: req.params.productId },
       });
 
       return res.status(201).json({
@@ -107,21 +98,21 @@ const updatePayment = asyncHandler(async (req, res) => {
   }
 });
 
-const deletePayment = async function (req, res) {
+const deleteProduct = async function (req, res) {
   try {
     if (req.person.userTypeId === 1 && req.person.userTypeId === 2) {
-      const deletedData = await Payment.destroy({
-        where: { id: req.params.paymentId },
+      const deletedData = await Product.destroy({
+        where: { id: req.params.productId },
       });
 
       if (!deletedData) {
         return res
           .status(404)
-          .send({ status: false, msg: "Payment Data not found!" });
+          .send({ status: false, msg: "Product not found!" });
       }
       return res.status(200).json({
         status: true,
-        message: "Payment Data deleted Successfully!",
+        message: "Product deleted Successfully!",
       });
     } else {
       return res.status(400).json({
@@ -136,9 +127,9 @@ const deletePayment = async function (req, res) {
 };
 
 module.exports = {
-  createPayment,
-  fetchAllPayment,
-  fetchPaymentById,
-  updatePayment,
-  deletePayment,
+  createProduct,
+  fetchAllProduct,
+  fetchProductById,
+  updateProduct,
+  deleteProduct,
 };

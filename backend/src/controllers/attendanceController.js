@@ -1,18 +1,18 @@
 const asyncHandler = require("express-async-handler");
-const Payment = require("../models/payment");
+const AttendanceList = require("../models/attendanceList");
 
-const createPayment = asyncHandler(async (req, res) => {
+const createAttendanceList = asyncHandler(async (req, res) => {
   try {
     const reqBody = req.body;
 
-    if (req.person.userTypeId === 1 && req.person.userTypeId === 2) {
-      const paymentData = await Payment.create(reqBody);
-      const resp = await paymentData.save();
+    if (req.person.userTypeId === 1) {
+      const attendanceListInfo = await AttendanceList.create(reqBody);
+      const resp = await attendanceListInfo.save();
 
       return res.status(201).json({
         status: true,
         response: resp,
-        message: "Payment data created Successfully!",
+        message: "Attendance List created Successfully!",
       });
     } else {
       return res.status(400).json({
@@ -30,10 +30,10 @@ const createPayment = asyncHandler(async (req, res) => {
   }
 });
 
-const fetchAllPayment = asyncHandler(async (req, res) => {
+const fetchAllAttendanceList = asyncHandler(async (req, res) => {
   try {
-    if (req.person.userTypeId === 1 && req.person.userTypeId === 2) {
-      const response = await Payment.findAll({});
+    if (req.person.userTypeId === 1) {
+      const response = await AttendanceList.findAll({});
       return res.status(200).json({
         status: "success",
         data: response,
@@ -48,17 +48,17 @@ const fetchAllPayment = asyncHandler(async (req, res) => {
   } catch (error) {
     console.log(error.message);
     return res.status(500).json({
-      status: 500,
+      status: false,
       message: "Something went wrong",
-      messageInfo: error,
+      err: error.message,
     });
   }
 });
 
-const fetchPaymentById = asyncHandler(async (req, res) => {
+const fetchAttendanceById = asyncHandler(async (req, res) => {
   try {
-    const response = await Payment.findOne({
-      where: { id: req.params.paymentId },
+    const response = await AttendanceList.findOne({
+      where: { id: req.params.attendanceId },
     });
     return res.status(200).json({
       status: "success",
@@ -77,19 +77,21 @@ const fetchPaymentById = asyncHandler(async (req, res) => {
   }
 });
 
-const updatePayment = asyncHandler(async (req, res) => {
+const updateAttendanceList = asyncHandler(async (req, res) => {
   try {
     const reqBody = req.body;
-    if (req.person.userTypeId === 1 && req.person.userTypeId === 2) {
-      const response = await Payment.update(reqBody, {
-        where: { id: req.params.paymentId },
+    const attendanceId = req.params.attendanceId;
+
+    if (req.person.userTypeId === 1) {
+      const attandanceInfo = await AttendanceList.update(reqBody, {
+        where: { id: attendanceId },
       });
 
       return res.status(201).json({
-        status: response[0] === 0 ? 404 : 200,
-        data: response,
+        status: attandanceInfo[0] === 0 ? 404 : 200,
+        data: attandanceInfo,
         message:
-          response[0] === 0 ? "Nothing updated" : "Successfully Updated!",
+          attandanceInfo[0] === 0 ? "Nothing updated" : "Successfully Updated!",
       });
     } else {
       return res.status(400).json({
@@ -98,30 +100,32 @@ const updatePayment = asyncHandler(async (req, res) => {
       });
     }
   } catch (error) {
-    console.log(error.message);
+    console.log(error);
     return res.status(500).json({
-      status: 500,
+      status: false,
       message: "Something went wrong",
-      messageInfo: error,
+      err: error,
     });
   }
 });
 
-const deletePayment = async function (req, res) {
+const deleteAttendanceList = async function (req, res) {
   try {
-    if (req.person.userTypeId === 1 && req.person.userTypeId === 2) {
-      const deletedData = await Payment.destroy({
-        where: { id: req.params.paymentId },
+    const attendanceId = req.params.attendanceId;
+
+    if (req.person.userTypeId === 1) {
+      const deletedData = await AttendanceList.destroy({
+        where: { id: attendanceId },
       });
 
       if (!deletedData) {
         return res
           .status(404)
-          .send({ status: false, msg: "Payment Data not found!" });
+          .send({ status: false, msg: "Attandance List not found!" });
       }
       return res.status(200).json({
         status: true,
-        message: "Payment Data deleted Successfully!",
+        message: "Attandance List deleted Successfully!",
       });
     } else {
       return res.status(400).json({
@@ -136,9 +140,9 @@ const deletePayment = async function (req, res) {
 };
 
 module.exports = {
-  createPayment,
-  fetchAllPayment,
-  fetchPaymentById,
-  updatePayment,
-  deletePayment,
+  createAttendanceList,
+  fetchAllAttendanceList,
+  fetchAttendanceById,
+  updateAttendanceList,
+  deleteAttendanceList,
 };

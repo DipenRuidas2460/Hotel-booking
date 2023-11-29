@@ -32,6 +32,4 @@ const OrganizationalDetails = sequelize.define(
   await OrganizationalDetails.sync({ force: false });
 })();
 
-OrganizationalDetails.belongsTo(RoomList, { foreignKey: "floorRoomId" });
-
 module.exports = OrganizationalDetails;

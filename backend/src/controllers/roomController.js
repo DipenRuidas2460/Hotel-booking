@@ -32,11 +32,11 @@ const createRoomList = asyncHandler(async (req, res) => {
 
 const fetchAllRoomList = asyncHandler(async (req, res) => {
   try {
-    const roomList = await RoomList.findAll({});
+    const response = await RoomList.findAll({});
     return res.status(200).json({
-      status: true,
-      response: roomList,
-      message: "Room List fetched Successfully!",
+      status: "success",
+      data: response,
+      message: response.length ? "Successfully fetch data" : "No data found",
     });
   } catch (error) {
     console.log(error.message);

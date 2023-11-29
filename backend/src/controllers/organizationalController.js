@@ -1,18 +1,18 @@
 const asyncHandler = require("express-async-handler");
-const Payment = require("../models/payment");
+const OrganizationalDetails = require("../models/organizationalDetails");
 
-const createPayment = asyncHandler(async (req, res) => {
+const createOrganizationalDetails = asyncHandler(async (req, res) => {
   try {
     const reqBody = req.body;
 
-    if (req.person.userTypeId === 1 && req.person.userTypeId === 2) {
-      const paymentData = await Payment.create(reqBody);
-      const resp = await paymentData.save();
+    if (req.person.userTypeId === 1) {
+      const organizationalData = await OrganizationalDetails.create(reqBody);
+      const resp = await organizationalData.save();
 
       return res.status(201).json({
         status: true,
         response: resp,
-        message: "Payment data created Successfully!",
+        message: "Organizational Data created Successfully!",
       });
     } else {
       return res.status(400).json({
@@ -30,10 +30,10 @@ const createPayment = asyncHandler(async (req, res) => {
   }
 });
 
-const fetchAllPayment = asyncHandler(async (req, res) => {
+const fetchOrganizationDetails = asyncHandler(async (req, res) => {
   try {
-    if (req.person.userTypeId === 1 && req.person.userTypeId === 2) {
-      const response = await Payment.findAll({});
+    if (req.person.userTypeId === 1) {
+      const response = await OrganizationalDetails.findAll({});
       return res.status(200).json({
         status: "success",
         data: response,
@@ -55,34 +55,12 @@ const fetchAllPayment = asyncHandler(async (req, res) => {
   }
 });
 
-const fetchPaymentById = asyncHandler(async (req, res) => {
-  try {
-    const response = await Payment.findOne({
-      where: { id: req.params.paymentId },
-    });
-    return res.status(200).json({
-      status: "success",
-      data: response,
-      message: response.length
-        ? "Successfully fetch data"
-        : "Data not present!",
-    });
-  } catch (error) {
-    console.log(error.message);
-    return res.status(500).json({
-      status: 500,
-      message: "Something went wrong",
-      messageInfo: error,
-    });
-  }
-});
-
-const updatePayment = asyncHandler(async (req, res) => {
+const updateOrganizationDetails = asyncHandler(async (req, res) => {
   try {
     const reqBody = req.body;
-    if (req.person.userTypeId === 1 && req.person.userTypeId === 2) {
-      const response = await Payment.update(reqBody, {
-        where: { id: req.params.paymentId },
+    if (req.person.userTypeId === 1) {
+      const response = await OrganizationalDetails.update(reqBody, {
+        where: { id: req.params.organizationalId },
       });
 
       return res.status(201).json({
@@ -107,21 +85,21 @@ const updatePayment = asyncHandler(async (req, res) => {
   }
 });
 
-const deletePayment = async function (req, res) {
+const deleteOrganizationalDetails = async function (req, res) {
   try {
-    if (req.person.userTypeId === 1 && req.person.userTypeId === 2) {
-      const deletedData = await Payment.destroy({
-        where: { id: req.params.paymentId },
+    if (req.person.userTypeId === 1) {
+      const deletedData = await OrganizationalDetails.destroy({
+        where: { id: req.params.organizationalId },
       });
 
       if (!deletedData) {
         return res
           .status(404)
-          .send({ status: false, msg: "Payment Data not found!" });
+          .send({ status: false, msg: "Organizational Data not found!" });
       }
       return res.status(200).json({
         status: true,
-        message: "Payment Data deleted Successfully!",
+        message: "Organizational Data deleted Successfully!",
       });
     } else {
       return res.status(400).json({
@@ -136,9 +114,8 @@ const deletePayment = async function (req, res) {
 };
 
 module.exports = {
-  createPayment,
-  fetchAllPayment,
-  fetchPaymentById,
-  updatePayment,
-  deletePayment,
+  createOrganizationalDetails,
+  fetchOrganizationDetails,
+  updateOrganizationDetails,
+  deleteOrganizationalDetails,
 };

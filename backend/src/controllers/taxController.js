@@ -30,16 +30,16 @@ const createTax = asyncHandler(async (req, res) => {
   }
 });
 
-const fetchTaxData = asyncHandler(async (req, res) => {
+const fetchTaxById = asyncHandler(async (req, res) => {
   try {
-    const taxData = await TaxList.findOne({
-      where: { id: req.params.id },
+    const response = await TaxList.findOne({
+      where: { id: req.params.taxId },
     });
 
-    return res.status(201).json({
-      status: true,
-      response: taxData,
-      message: "Tax data fetch successfully!",
+    return res.status(200).json({
+      status: "success",
+      data: response,
+      message: response.length ? "Successfully fetch data" : "No data found",
     });
   } catch (error) {
     console.log(error.message);
@@ -54,11 +54,11 @@ const fetchTaxData = asyncHandler(async (req, res) => {
 const fetchAllTaxData = asyncHandler(async (req, res) => {
   try {
     if (req.person.userTypeId === 1) {
-      const allTaxData = await TaxList.findAll({});
-      return res.status(201).json({
-        status: true,
-        response: allTaxData,
-        message: "All Tax data fetch successfully!",
+      const response = await TaxList.findAll({});
+      return res.status(200).json({
+        status: "success",
+        data: response,
+        message: response.length ? "Successfully fetch data" : "No data found",
       });
     } else {
       return res.status(400).json({
@@ -82,8 +82,7 @@ const updateTaxList = asyncHandler(async (req, res) => {
     const taxId = req.params.taxId;
 
     if (req.person.userTypeId === 1) {
-      const updateTaxData = await TaxList.update(
-        reqBody,{
+      const updateTaxData = await TaxList.update(reqBody, {
         where: { id: taxId },
       });
 
@@ -145,7 +144,7 @@ const deleteTaxList = asyncHandler(async (req, res) => {
 
 module.exports = {
   createTax,
-  fetchTaxData,
+  fetchTaxById,
   fetchAllTaxData,
   updateTaxList,
   deleteTaxList,

@@ -32,14 +32,14 @@ const createInvoice = asyncHandler(async (req, res) => {
 
 const fetchInvoiceData = asyncHandler(async (req, res) => {
   try {
-    const invoiceData = await Invoice.findOne({
+    const response = await Invoice.findOne({
       where: { userId: req.person.id },
     });
 
-    return res.status(201).json({
-      status: true,
-      response: invoiceData,
-      message: "Invoice data fetch successfully!",
+    return res.status(200).json({
+      status: "success",
+      data: response,
+      message: response.length ? "Successfully fetch data" : "No data found",
     });
   } catch (error) {
     console.log(error.message);
@@ -54,11 +54,11 @@ const fetchInvoiceData = asyncHandler(async (req, res) => {
 const fetchAllInvoiceData = asyncHandler(async (req, res) => {
   try {
     if (req.person.userTypeId === 1) {
-      const allInvoiceData = await Invoice.findAll({});
-      return res.status(201).json({
-        status: true,
-        response: allInvoiceData,
-        message: "All Invoice data fetch successfully!",
+      const response = await Invoice.findAll({});
+      return res.status(200).json({
+        status: "success",
+        data: response,
+        message: response.length ? "Successfully fetch data" : "No data found",
       });
     } else {
       return res.status(400).json({
